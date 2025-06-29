@@ -2119,3 +2119,30 @@ macro_rules! index_state_trie_migration_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_sudo_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::KeyChanged { old, new } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(new.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                match old {
+                    Some(account) => {
+                        $indexer.index_event(
+                            Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                            $block_number,
+                            $event_index,
+                        )?;
+                        2
+                    }
+                    None => 1,
+                }
+            }
+            _ => 0,
+        }
+    };
+}

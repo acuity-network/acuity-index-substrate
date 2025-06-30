@@ -2145,3 +2145,106 @@ macro_rules! index_sudo_event {
         }
     };
 }
+
+#[macro_export]
+macro_rules! index_recovery_event {
+    ($event_enum: ty, $event: ident, $indexer: ident, $block_number: ident, $event_index: ident) => {
+        match $event {
+            <$event_enum>::RecoveryCreated { account } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            <$event_enum>::RecoveryInitiated {
+                lost_account,
+                rescuer_account,
+            } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(lost_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(rescuer_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::RecoveryVouched {
+                lost_account,
+                rescuer_account,
+                sender,
+            } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(lost_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(rescuer_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(sender.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                3
+            }
+            <$event_enum>::RecoveryClosed {
+                lost_account,
+                rescuer_account,
+            } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(lost_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(rescuer_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::AccountRecovered {
+                lost_account,
+                rescuer_account,
+            } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(lost_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(rescuer_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                2
+            }
+            <$event_enum>::RecoveryRemoved { lost_account } => {
+                $indexer.index_event(
+                    Key::Substrate(SubstrateKey::AccountId(Bytes32(lost_account.0))),
+                    $block_number,
+                    $event_index,
+                )?;
+                1
+            }
+            // <$event_enum>::DepositPoked { who, .. } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     1
+            // }
+            _ => 0,
+        }
+    };
+}

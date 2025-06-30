@@ -409,8 +409,7 @@ macro_rules! index_staking_event {
             <$event_enum>::PayoutStarted {
                 era_index,
                 validator_stash,
-                page,
-                next,
+                ..
             } => {
                 $indexer.index_event(
                     Key::Substrate(SubstrateKey::EraIndex(era_index)),

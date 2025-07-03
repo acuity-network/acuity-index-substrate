@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use sled::{Db, Tree};
 use std::str::FromStr;
 use subxt::utils::AccountId32;
+use subxt::utils::H256;
 use tokio::sync::mpsc::{error::TryRecvError, unbounded_channel};
 use zerocopy::{AsBytes, FromBytes};
 
@@ -89,7 +90,7 @@ impl RuntimeIndexer for TestIndexer {
         "test"
     }
 
-    fn get_genesis_hash() -> <Self::RuntimeConfig as subxt::Config>::Hash {
+    fn get_genesis_hash() -> H256 {
         hex!["91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"].into()
     }
 
@@ -121,7 +122,7 @@ impl RuntimeIndexer for TestIndexer2 {
         "test"
     }
 
-    fn get_genesis_hash() -> <Self::RuntimeConfig as subxt::Config>::Hash {
+    fn get_genesis_hash() -> H256 {
         hex!["91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3"].into()
     }
 

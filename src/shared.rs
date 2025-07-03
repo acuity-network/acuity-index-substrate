@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use sled::{Db, Tree};
 use std::fmt;
 use std::hash::Hash;
+use subxt::utils::H256;
 use tokio::sync::mpsc::UnboundedSender;
 use tokio_tungstenite::tungstenite;
 use zerocopy::{
@@ -26,6 +27,12 @@ pub enum IndexError {
     ParseError,
     #[error("connection error")]
     BlockNotFound(u32),
+    #[error("RPC error")]
+    RpcError(#[from] subxt::ext::subxt_rpcs::Error),
+    #[error("codec error")]
+    CodecError(#[from] subxt::ext::codec::Error),
+    #[error("metadata error")]
+    MetadataError(#[from] subxt::error::MetadataTryFromError),
 }
 
 /// Indexer for a specific chain
@@ -42,7 +49,7 @@ pub trait RuntimeIndexer {
 
     fn get_name() -> &'static str;
 
-    fn get_genesis_hash() -> <Self::RuntimeConfig as subxt::Config>::Hash;
+    fn get_genesis_hash() -> H256;
 
     fn get_versions() -> &'static [u32];
 

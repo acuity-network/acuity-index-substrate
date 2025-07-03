@@ -3,9 +3,9 @@ use futures::future;
 use num_format::{Locale, ToFormattedString};
 use sled::Tree;
 use std::{collections::HashMap, future::Future, sync::Mutex};
-use subxt::{backend::legacy::LegacyRpcMethods, blocks::Block, metadata::Metadata, OnlineClient};
+use subxt::{OnlineClient, backend::legacy::LegacyRpcMethods, blocks::Block, metadata::Metadata};
 use tokio::{
-    sync::{mpsc, watch, RwLock},
+    sync::{RwLock, mpsc, watch},
     time::{self, Duration, Instant, MissedTickBehavior},
 };
 use tracing::{debug, error, info};
@@ -98,7 +98,11 @@ impl<R: RuntimeIndexer> Indexer<R> {
                             "Downloading metadata for spec version {}",
                             runtime_version.spec_version
                         );
-                        let metadata = rpc.state_get_metadata(Some(block_hash)).await?;
+                        let metadata: Metadata = rpc
+                            .state_get_metadata(Some(block_hash))
+                            .await?
+                            .to_frame_metadata()?
+                            .try_into()?;
                         info!(
                             "Finished downloading metadata for spec version {}",
                             runtime_version.spec_version
@@ -111,7 +115,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
         };
 
         let events =
-            subxt::events::Events::new_from_client(metadata, block_hash, api.clone()).await?;
+            subxt::events::new_events_from_client(metadata, block_hash, api.clone()).await?;
 
         for (i, event) in events.iter().enumerate() {
             match event {

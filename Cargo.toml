@@ -7,6 +7,7 @@ description = "A library for indexing events from Substrate blockchains."
 homepage = "https://index.acuity.network/"
 repository = "https://github.com/acuity-network/acuity-index-substrate"
 license = "Apache-2.0"
+rust-version = "1.88"
 
 [dependencies]
 ahash = "0.8.3"
@@ -24,8 +25,8 @@ serde_json = "1.0.96"
 signal-hook = "0.3.17"
 signal-hook-tokio = { version = "0.3.1", features = ["futures-v0_3"] }
 sled = "0.34.7"
-subxt = "0.35.3"
-thiserror = "1.0.40"
+subxt = "0.42.1"
+thiserror = { version = "2.0.0", default-features = false }
 tokio = { version = "1.28.0", features = ["full"] }
 tokio-tungstenite = "0.21.0"
 tracing = "0.1.40"

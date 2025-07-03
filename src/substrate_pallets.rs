@@ -1871,14 +1871,16 @@ macro_rules! index_conviction_voting_event {
                     $event_index,
                 )?;
                 1
-            } // <$event_enum>::VoteUnlocked { who, .. } => {
-              //     $indexer.index_event(
-              //         Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
-              //         $block_number,
-              //         $event_index,
-              //     )?;
-              //     1
-              // }
+            }
+            // <$event_enum>::VoteUnlocked { who, .. } => {
+            //     $indexer.index_event(
+            //         Key::Substrate(SubstrateKey::AccountId(Bytes32(who.0))),
+            //         $block_number,
+            //         $event_index,
+            //     )?;
+            //     1
+            // }
+            _ => 0,
         }
     };
 }

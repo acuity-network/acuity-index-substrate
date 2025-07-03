@@ -3,6 +3,7 @@ use futures::{SinkExt, StreamExt};
 use sled::Tree;
 use std::net::SocketAddr;
 use subxt::backend::legacy::LegacyRpcMethods;
+use subxt::metadata::types::Metadata;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{
     mpsc::{UnboundedSender, unbounded_channel},
@@ -49,7 +50,11 @@ pub fn process_msg_unsubscribe_status<R: RuntimeIndexer>(
 pub async fn process_msg_variants<R: RuntimeIndexer>(
     rpc: &LegacyRpcMethods<R::RuntimeConfig>,
 ) -> Result<ResponseMessage<R::ChainKey>, IndexError> {
-    let metadata = rpc.state_get_metadata(None).await?;
+    let metadata: Metadata = rpc
+        .state_get_metadata(None)
+        .await?
+        .to_frame_metadata()?
+        .try_into()?;
     let mut pallets = Vec::new();
 
     for pallet in metadata.pallets() {

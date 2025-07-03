@@ -2,7 +2,6 @@
 //!
 //! A library for indexing events from Substrate blockchains.
 
-#![feature(let_chains)]
 use byte_unit::Byte;
 use futures::StreamExt;
 use signal_hook::{consts::TERM_SIGNALS, flag};
@@ -10,11 +9,11 @@ use signal_hook_tokio::Signals;
 use std::{
     path::PathBuf,
     process::exit,
-    sync::{atomic::AtomicBool, Arc},
+    sync::{Arc, atomic::AtomicBool},
 };
 use subxt::{
-    backend::{legacy::LegacyRpcMethods, rpc::RpcClient},
     OnlineClient,
+    backend::{legacy::LegacyRpcMethods, rpc::RpcClient},
 };
 use tokio::{
     join, spawn,

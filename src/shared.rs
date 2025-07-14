@@ -135,6 +135,7 @@ pub struct Trees<CT> {
     pub variant: Tree,
     pub substrate: SubstrateTrees,
     pub chain: CT,
+    pub block_events: Tree,
 }
 
 /// On-disk format for variant keys
@@ -476,6 +477,7 @@ pub struct SpanDbValue {
     pub start: U32<BigEndian>,
     pub version: U16<BigEndian>,
     pub index_variant: u8,
+    pub store_events: u8,
 }
 
 /// Start and end block number for a span of blocks

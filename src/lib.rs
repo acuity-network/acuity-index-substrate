@@ -45,6 +45,7 @@ pub fn open_trees<R: RuntimeIndexer>(
         // Each event parameter to be indexed has its own tree.
         substrate: SubstrateTrees::open(&db)?,
         chain: <R::ChainKey as IndexKey>::ChainTrees::open(&db)?,
+        block_events: db.open_tree(b"block_events")?,
     };
     Ok(trees)
 }
@@ -57,6 +58,7 @@ pub fn close_trees<R: RuntimeIndexer>(
     trees.span.flush()?;
     trees.variant.flush()?;
     trees.substrate.flush()?;
+    trees.block_events.flush()?;
     Ok(())
 }
 
@@ -69,6 +71,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
     url: Option<String>,
     queue_depth: u8,
     index_variant: bool,
+    store_events: bool,
     port: u16,
     log_level: LevelFilter,
 ) {
@@ -184,6 +187,7 @@ pub async fn start<R: RuntimeIndexer + 'static>(
         rpc.clone(),
         queue_depth.into(),
         index_variant,
+        store_events,
         exit_rx.clone(),
         sub_rx,
     ));

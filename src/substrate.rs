@@ -9,7 +9,7 @@ use tokio::{
     time::{self, Duration, Instant, MissedTickBehavior},
 };
 use tracing::{debug, error, info};
-use zerocopy::{AsBytes, FromBytes};
+use zerocopy::{AsBytes, BigEndian, FromBytes, byteorder::U32};
 
 use crate::{shared::*, websockets::process_msg_status};
 
@@ -19,6 +19,7 @@ pub struct Indexer<R: RuntimeIndexer + ?Sized> {
     api: Option<OnlineClient<R::RuntimeConfig>>,
     rpc: Option<LegacyRpcMethods<R::RuntimeConfig>>,
     index_variant: bool,
+    store_events: bool,
     metadata_map_lock: RwLock<AHashMap<u32, Metadata>>,
     status_sub: Mutex<Vec<mpsc::UnboundedSender<ResponseMessage<R::ChainKey>>>>,
     events_sub_map:
@@ -31,12 +32,14 @@ impl<R: RuntimeIndexer> Indexer<R> {
         api: OnlineClient<R::RuntimeConfig>,
         rpc: LegacyRpcMethods<R::RuntimeConfig>,
         index_variant: bool,
+        store_events: bool,
     ) -> Self {
         Indexer {
             trees,
             api: Some(api),
             rpc: Some(rpc),
             index_variant,
+            store_events,
             metadata_map_lock: RwLock::new(AHashMap::new()),
             status_sub: Vec::new().into(),
             events_sub_map: HashMap::new().into(),
@@ -49,6 +52,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
             api: None,
             rpc: None,
             index_variant: true,
+            store_events: true,
             metadata_map_lock: RwLock::new(AHashMap::new()),
             status_sub: Vec::new().into(),
             events_sub_map: HashMap::new().into(),
@@ -139,6 +143,13 @@ impl<R: RuntimeIndexer> Indexer<R> {
             }
         }
 
+        if self.store_events {
+            let key: U32<BigEndian> = block_number.into();
+            self.trees
+                .block_events
+                .insert(key.as_bytes(), events.bytes())?;
+        }
+
         Ok((block_number, events.len(), key_count))
     }
 
@@ -184,6 +195,7 @@ impl<R: RuntimeIndexer> Indexer<R> {
 pub fn load_spans<R: RuntimeIndexer>(
     span_db: &Tree,
     index_variant: bool,
+    store_events: bool,
 ) -> Result<Vec<Span>, IndexError> {
     let mut spans = vec![];
     'span: for (key, value) in span_db.into_iter().flatten() {
@@ -200,6 +212,18 @@ pub fn load_spans<R: RuntimeIndexer>(
                 end.to_formatted_string(&Locale::en)
             );
             info!("📚 Reason: event variants not indexed.");
+            continue;
+        }
+        // Check if events are supposed to be stored and they were not in this span.
+        if store_events && (span_value.store_events != 1) {
+            // Delete the span.
+            span_db.remove(key)?;
+            info!(
+                "📚 Re-indexing span of blocks from #{} to #{}.",
+                start.to_formatted_string(&Locale::en),
+                end.to_formatted_string(&Locale::en)
+            );
+            info!("📚 Reason: events not stored.");
             continue;
         }
         let span_version: u16 = span_value.version.into();
@@ -320,12 +344,20 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
     queue_depth: u32,
     index_variant: bool,
+    store_events: bool,
     mut exit_rx: watch::Receiver<bool>,
     mut sub_rx: mpsc::UnboundedReceiver<SubscriptionMessage<R::ChainKey>>,
 ) -> Result<(), IndexError> {
     info!(
         "📇 Event variant indexing: {}",
         match index_variant {
+            false => "disabled",
+            true => "enabled",
+        },
+    );
+    info!(
+        "📇 Event storage: {}",
+        match store_events {
             false => "disabled",
             true => "enabled",
         },
@@ -346,7 +378,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         next_batch_block.to_formatted_string(&Locale::en)
     );
     // Load already indexed spans from the db.
-    let mut spans = load_spans::<R>(&trees.span, index_variant)?;
+    let mut spans = load_spans::<R>(&trees.span, index_variant, store_events)?;
     // If the first head block to be indexed will be touching the last span (the indexer was restarted), set the current span to the last span. Otherwise there will be no batch block indexed to connect the current span to the last span.
     let mut current_span = if let Some(span) = spans.last()
         && span.end == next_batch_block
@@ -371,7 +403,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
         }
     };
 
-    let indexer = Indexer::<R>::new(trees.clone(), api, rpc, index_variant);
+    let indexer = Indexer::<R>::new(trees.clone(), api, rpc, index_variant, store_events);
 
     let mut head_future = Box::pin(indexer.index_head(blocks_sub.next()));
 
@@ -411,6 +443,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                         start: current_span.start.into(),
                         version: (R::get_versions().len() - 1).try_into().unwrap(),
                         index_variant: index_variant.into(),
+                        store_events: store_events.into(),
                     };
                     trees.span.insert(current_span.end.to_be_bytes(), value.as_bytes())?;
                     info!(
@@ -431,6 +464,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
                             start: current_span.start.into(),
                             version: (R::get_versions().len() - 1).try_into().unwrap(),
                             index_variant: index_variant.into(),
+                            store_events: store_events.into(),
                         };
                         trees.span.insert(current_span.end.to_be_bytes(), value.as_bytes())?;
                         info!(

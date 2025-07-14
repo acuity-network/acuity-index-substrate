@@ -152,7 +152,8 @@ async fn test_process_msg_status() {
     let value = SpanDbValue {
         start: 0_u32.try_into().unwrap(),
         version: 0_u16.try_into().unwrap(),
-        index_variant: 0.try_into().unwrap(),
+        index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
@@ -162,7 +163,8 @@ async fn test_process_msg_status() {
     let value = SpanDbValue {
         start: 60_u32.try_into().unwrap(),
         version: 0_u16.try_into().unwrap(),
-        index_variant: 0.try_into().unwrap(),
+        index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
@@ -172,7 +174,8 @@ async fn test_process_msg_status() {
     let value = SpanDbValue {
         start: 42_u32.try_into().unwrap(),
         version: 0_u16.try_into().unwrap(),
-        index_variant: 0.try_into().unwrap(),
+        index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
@@ -204,7 +207,8 @@ async fn test_process_msg_subscribe_status() {
     let value = SpanDbValue {
         start: 0_u32.try_into().unwrap(),
         version: 0_u16.try_into().unwrap(),
-        index_variant: 0.try_into().unwrap(),
+        index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
@@ -233,7 +237,8 @@ async fn test_process_msg_subscribe_status() {
     let value = SpanDbValue {
         start: 60_u32.try_into().unwrap(),
         version: 0_u16.try_into().unwrap(),
-        index_variant: 0.try_into().unwrap(),
+        index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
@@ -256,7 +261,8 @@ async fn test_process_msg_subscribe_status() {
     let value = SpanDbValue {
         start: 42_u32.try_into().unwrap(),
         version: 0_u16.try_into().unwrap(),
-        index_variant: 0.try_into().unwrap(),
+        index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
@@ -851,19 +857,20 @@ fn test_load_spans() {
     let db_config = sled::Config::new().temporary(true);
     let trees = open_trees::<TestIndexer>(db_config).unwrap();
     trees.span.clear().unwrap();
-    let spans = load_spans::<TestIndexer>(&trees.span, false).unwrap();
+    let spans = load_spans::<TestIndexer>(&trees.span, false, false).unwrap();
     assert_eq!(trees.span.len(), 0);
     assert_eq!(spans.len(), 0);
     let value = SpanDbValue {
         start: 80_u32.into(),
         version: 0_u16.into(),
         index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
         .insert(100_u32.to_be_bytes(), value.as_bytes())
         .unwrap();
-    let spans = load_spans::<TestIndexer>(&trees.span, false).unwrap();
+    let spans = load_spans::<TestIndexer>(&trees.span, false, false).unwrap();
     assert_eq!(trees.span.len(), 1);
     assert_eq!(spans.len(), 1);
     assert_eq!(
@@ -877,12 +884,13 @@ fn test_load_spans() {
         start: 180_u32.into(),
         version: 0_u16.into(),
         index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
         .insert(200_u32.to_be_bytes(), value.as_bytes())
         .unwrap();
-    let spans = load_spans::<TestIndexer>(&trees.span, false).unwrap();
+    let spans = load_spans::<TestIndexer>(&trees.span, false, false).unwrap();
     assert_eq!(trees.span.len(), 2);
     assert_eq!(spans.len(), 2);
     assert_eq!(
@@ -899,7 +907,7 @@ fn test_load_spans() {
             end: 200
         }
     );
-    let spans = load_spans::<TestIndexer2>(&trees.span, false).unwrap();
+    let spans = load_spans::<TestIndexer2>(&trees.span, false, false).unwrap();
     assert_eq!(trees.span.len(), 2);
     assert_eq!(spans.len(), 2);
     assert_eq!(
@@ -920,12 +928,13 @@ fn test_load_spans() {
         start: 400_u32.into(),
         version: 0_u16.into(),
         index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
         .insert(600_u32.to_be_bytes(), value.as_bytes())
         .unwrap();
-    let spans = load_spans::<TestIndexer2>(&trees.span, false).unwrap();
+    let spans = load_spans::<TestIndexer2>(&trees.span, false, false).unwrap();
     assert_eq!(trees.span.len(), 3);
     assert_eq!(spans.len(), 3);
     assert_eq!(
@@ -953,12 +962,13 @@ fn test_load_spans() {
         start: 500_u32.into(),
         version: 0_u16.into(),
         index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
         .insert(600_u32.to_be_bytes(), value.as_bytes())
         .unwrap();
-    let spans = load_spans::<TestIndexer2>(&trees.span, false).unwrap();
+    let spans = load_spans::<TestIndexer2>(&trees.span, false, false).unwrap();
     assert_eq!(trees.span.len(), 3);
     assert_eq!(spans.len(), 3);
     assert_eq!(
@@ -986,12 +996,13 @@ fn test_load_spans() {
         start: 500_u32.into(),
         version: 1_u16.into(),
         index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
         .insert(600_u32.to_be_bytes(), value.as_bytes())
         .unwrap();
-    let spans = load_spans::<TestIndexer2>(&trees.span, false).unwrap();
+    let spans = load_spans::<TestIndexer2>(&trees.span, false, false).unwrap();
     assert_eq!(trees.span.len(), 4);
     assert_eq!(spans.len(), 4);
     assert_eq!(
@@ -1048,6 +1059,7 @@ fn test_check_span() {
         start: 10_u32.into(),
         version: 0_u16.into(),
         index_variant: 0,
+        store_events: 0,
     };
     trees
         .span
@@ -1069,6 +1081,7 @@ fn test_check_span() {
         start: 30_u32.into(),
         version: 0_u16.into(),
         index_variant: 0,
+        store_events: 0,
     };
     trees
         .span

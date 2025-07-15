@@ -345,12 +345,27 @@ pub async fn substrate_index<R: RuntimeIndexer>(
     trees: Trees<<R::ChainKey as IndexKey>::ChainTrees>,
     api: OnlineClient<R::RuntimeConfig>,
     rpc: LegacyRpcMethods<R::RuntimeConfig>,
+    finalized: bool,
     queue_depth: u32,
     index_variant: bool,
     store_events: bool,
     mut exit_rx: watch::Receiver<bool>,
     mut sub_rx: mpsc::UnboundedReceiver<SubscriptionMessage<R::ChainKey>>,
 ) -> Result<(), IndexError> {
+    info!(
+        "📇 Only index finalized blocks: {}",
+        match finalized {
+            false => "disabled",
+            true => "enabled",
+        },
+    );
+
+    let mut blocks_sub = if finalized {
+        api.blocks().subscribe_finalized().await
+    } else {
+        api.blocks().subscribe_best().await
+    }?;
+
     info!(
         "📇 Event variant indexing: {}",
         match index_variant {
@@ -365,8 +380,7 @@ pub async fn substrate_index<R: RuntimeIndexer>(
             true => "enabled",
         },
     );
-    // Subscribe to all finalized blocks:
-    let mut blocks_sub = api.blocks().subscribe_finalized().await?;
+
     // Determine the correct block to start batch indexing.
     let mut next_batch_block: u32 = blocks_sub
         .next()

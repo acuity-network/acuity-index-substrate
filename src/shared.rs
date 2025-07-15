@@ -123,6 +123,7 @@ impl SubstrateTrees {
         self.registrar_index.flush()?;
         self.session_index.flush()?;
         self.tip_hash.flush()?;
+        self.spend_index.flush()?;
         Ok(())
     }
 }

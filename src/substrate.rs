@@ -145,9 +145,12 @@ impl<R: RuntimeIndexer> Indexer<R> {
 
         if self.store_events {
             let key: U32<BigEndian> = block_number.into();
-            self.trees
-                .block_events
-                .insert(key.as_bytes(), events.bytes())?;
+            let spec_version: U32<BigEndian> = runtime_version.spec_version.into();
+
+            self.trees.block_events.insert(
+                key.as_bytes(),
+                [spec_version.as_bytes(), events.bytes()].concat(),
+            )?;
         }
 
         Ok((block_number, events.len(), key_count))

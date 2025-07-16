@@ -446,6 +446,13 @@ pub struct Event {
     pub event_index: u16,
 }
 
+#[derive(Serialize, Debug, Clone, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Block {
+    pub block_number: u32,
+    pub bytes: Vec<u8>,
+}
+
 impl fmt::Display for Event {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -501,7 +508,11 @@ impl fmt::Display for Span {
 pub enum ResponseMessage<CK: IndexKey> {
     Status(Vec<Span>),
     Variants(Vec<PalletMeta>),
-    Events { key: Key<CK>, events: Vec<Event> },
+    Events {
+        key: Key<CK>,
+        events: Vec<Event>,
+        block_events: Vec<Block>,
+    },
     Subscribed,
     Unsubscribed,
     SizeOnDisk(u64),

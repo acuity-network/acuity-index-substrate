@@ -329,6 +329,7 @@ async fn test_process_msg_variant() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -371,6 +372,7 @@ async fn test_process_msg_account_id() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -410,6 +412,7 @@ async fn test_process_msg_account_index() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -437,6 +440,7 @@ async fn test_process_msg_bounty_index() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -464,6 +468,7 @@ async fn test_process_msg_era_index() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -491,6 +496,7 @@ async fn test_process_msg_message_id() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -518,6 +524,7 @@ async fn test_process_msg_pool_id() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -545,6 +552,7 @@ async fn test_process_msg_preimage_hash() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -572,6 +580,7 @@ async fn test_process_msg_proposal_hash() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -599,6 +608,7 @@ async fn test_process_msg_proposal_index() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -626,6 +636,7 @@ async fn test_process_msg_ref_index() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -653,6 +664,7 @@ async fn test_process_msg_registrar_index() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -680,6 +692,7 @@ async fn test_process_msg_session_index() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -707,6 +720,7 @@ async fn test_process_msg_tip_hash() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -734,6 +748,7 @@ async fn test_process_msg_chain_test_index() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -761,6 +776,7 @@ async fn test_process_msg_chain_test_hash() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response
     else {
         panic!("Wrong response message.");
@@ -797,6 +813,7 @@ async fn test_process_msg_subscribe_events() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response_msg
     else {
         panic!("Wrong response message.");
@@ -811,6 +828,7 @@ async fn test_process_msg_subscribe_events() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response_msg
     else {
         panic!("Wrong response message.");
@@ -825,6 +843,7 @@ async fn test_process_msg_subscribe_events() {
     let ResponseMessage::Events {
         key: response_key,
         events,
+        block_events: _,
     } = response_msg
     else {
         panic!("Wrong response message.");

@@ -11,7 +11,8 @@ use tokio::sync::{
 };
 use tokio_tungstenite::tungstenite;
 use tracing::{error, info};
-use zerocopy::FromBytes;
+use zerocopy::AsBytes;
+use zerocopy::{BigEndian, FromBytes, byteorder::U32};
 
 pub fn process_msg_status<R: RuntimeIndexer>(span_db: &Tree) -> ResponseMessage<R::ChainKey> {
     let mut spans = vec![];
@@ -187,7 +188,31 @@ pub fn process_msg_get_events<R: RuntimeIndexer>(
         Key::Substrate(ref key) => process_msg_get_events_substrate::<R>(trees, key),
         Key::Chain(ref key) => key.get_key_events(&trees.chain),
     };
-    ResponseMessage::Events { key, events }
+
+    let mut block_numbers = events
+        .iter()
+        .map(|event| event.block_number)
+        .collect::<Vec<u32>>();
+    block_numbers.sort();
+    block_numbers.dedup();
+
+    let mut block_events = Vec::new();
+
+    for block_number in block_numbers.iter() {
+        let key: U32<BigEndian> = (*block_number).into();
+        if let Ok(Some(event_bytes)) = trees.block_events.get(key.as_bytes()) {
+            block_events.push(Block {
+                block_number: *block_number,
+                bytes: event_bytes.to_vec(),
+            });
+        };
+    }
+
+    ResponseMessage::Events {
+        key,
+        events,
+        block_events,
+    }
 }
 
 pub fn process_msg_subscribe_events<R: RuntimeIndexer>(

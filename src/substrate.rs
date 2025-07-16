@@ -167,9 +167,21 @@ impl<R: RuntimeIndexer> Indexer<R> {
     pub fn notify_subscribers(&self, search_key: Key<R::ChainKey>, event: Event) {
         let events_sub_map = self.events_sub_map.lock().unwrap();
         if let Some(txs) = events_sub_map.get(&search_key) {
+            let key: U32<BigEndian> = event.block_number.into();
+            let block_events =
+                if let Ok(Some(event_bytes)) = self.trees.block_events.get(key.as_bytes()) {
+                    vec![crate::Block {
+                        block_number: event.block_number,
+                        bytes: event_bytes.to_vec(),
+                    }]
+                } else {
+                    vec![]
+                };
+
             let msg = ResponseMessage::Events {
                 key: search_key,
                 events: vec![event],
+                block_events,
             };
             for tx in txs.iter() {
                 if tx.send(msg.clone()).is_ok() {}
